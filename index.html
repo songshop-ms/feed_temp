@@ -1,0 +1,1334 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+    <title>브랜딩 피드 템플릿 · 영구오빠</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+    <style>
+        :root {
+            --paper: #E9E7E1;
+            --card: #FFFFFF;
+            --ink: #1A1A1C;
+            --muted: #6E6B64;
+            --line: #D3D0C8;
+            --line-soft: #E5E2DB;
+            --deep: #243A32;
+            --deep-2: #315145;
+            --kakao: #FEE500;
+            --r: 5px;
+            --bar: 78px;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: var(--paper);
+            color: var(--ink);
+            font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            padding-bottom: calc(var(--bar) + env(safe-area-inset-bottom));
+        }
+        button,
+        input,
+        select,
+        textarea {
+            font-family: inherit;
+            color: inherit;
+            font-size: 16px;
+        }
+        .eyebrow {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .16em;
+            color: var(--muted);
+        }
+
+        header {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: baseline;
+            gap: 9px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+        }
+        header .sub {
+            font-size: 11.5px;
+            color: var(--muted);
+        }
+        header .tag {
+            margin-left: auto;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .12em;
+            color: var(--muted);
+        }
+
+        .wrap {
+            max-width: 1160px;
+            margin: 0 auto;
+        }
+
+        .stage {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: var(--paper);
+            padding: 12px 16px 10px;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .plate {
+            background: var(--card);
+            padding: 8px;
+            border: 1px solid var(--line);
+            box-shadow: 0 12px 28px -22px rgba(26, 26, 28, .6);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #111;
+            max-width: min(74vw, calc(46vh * .8));
+            cursor: grab;
+            touch-action: none;
+        }
+        canvas.dragging {
+            cursor: grabbing;
+        }
+        .stagebtns {
+            display: flex;
+            gap: 7px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .strip {
+            display: flex;
+            gap: 7px;
+            align-items: center;
+            overflow-x: auto;
+            padding: 11px 16px;
+            border-bottom: 1px solid var(--line-soft);
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .strip::-webkit-scrollbar {
+            display: none;
+        }
+        .frame {
+            flex: none;
+            width: 44px;
+            aspect-ratio: 4/5;
+            border: 1px solid var(--line);
+            border-radius: 2px;
+            background: #141416 center/cover no-repeat;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-end;
+        }
+        .frame.active {
+            outline: 2px solid var(--deep);
+            outline-offset: 2px;
+        }
+        .frame .n {
+            font-size: 9px;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(0, 0, 0, .6);
+            padding: 0 4px;
+            margin: 3px;
+            border-radius: 2px;
+        }
+        .frame .kill {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 17px;
+            height: 17px;
+            padding: 0;
+            border-radius: 50%;
+            border: 1px solid var(--line);
+            background: var(--card);
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .addframe {
+            flex: none;
+            width: 44px;
+            aspect-ratio: 4/5;
+            border: 1px dashed var(--line);
+            background: none;
+            color: var(--muted);
+            font-size: 18px;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--line);
+            position: sticky;
+            top: 0;
+            background: var(--paper);
+        }
+        .tabs button {
+            flex: 1;
+            padding: 12px 4px;
+            background: none;
+            border: 0;
+            border-bottom: 2px solid transparent;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+        }
+        .tabs button.on {
+            color: var(--ink);
+            border-bottom-color: var(--deep);
+            font-weight: 700;
+        }
+        .panel {
+            padding: 16px 16px 28px;
+        }
+        .panel[hidden] {
+            display: none;
+        }
+
+        .tpl {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .tplcard {
+            border: 1px solid var(--line);
+            background: var(--card);
+            border-radius: var(--r);
+            padding: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 12px;
+        }
+        .tplcard.on {
+            border-color: var(--deep);
+            box-shadow: 0 0 0 2px rgba(36, 58, 50, .14);
+        }
+        .tplcard canvas {
+            max-width: 100%;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        .tplcard .nm {
+            display: block;
+            margin-top: 7px;
+            font-weight: 700;
+            font-size: 12.5px;
+            letter-spacing: -.01em;
+        }
+        .tplcard .ds {
+            display: block;
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 1px;
+        }
+
+        .grp {
+            border-bottom: 1px solid var(--line-soft);
+            padding: 14px 0;
+        }
+        .grp:first-child {
+            padding-top: 0;
+        }
+        .grp:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+        .grp>.eyebrow {
+            display: block;
+            margin-bottom: 9px;
+        }
+        label.f {
+            display: block;
+            margin: 11px 0 5px;
+            font-size: 11.5px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        input[type=text],
+        textarea {
+            width: 100%;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--r);
+            padding: 10px 11px;
+            font-size: 15px;
+            line-height: 1.5;
+            outline: none;
+        }
+        input[type=text]:focus,
+        textarea:focus {
+            border-color: var(--deep);
+            box-shadow: 0 0 0 2px rgba(36, 58, 50, .1);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .hint {
+            font-size: 11.5px;
+            color: var(--muted);
+            margin-top: 5px;
+            line-height: 1.45;
+        }
+
+        .seg {
+            display: flex;
+            border: 1px solid var(--line);
+            border-radius: var(--r);
+            overflow: hidden;
+            background: var(--card);
+        }
+        .seg button {
+            flex: 1;
+            padding: 10px 4px;
+            background: none;
+            border: 0;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+        }
+        .seg button+button {
+            border-left: 1px solid var(--line);
+        }
+        .seg button.on {
+            background: var(--deep);
+            color: #fff;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 12px 0;
+        }
+        .row .name {
+            width: 72px;
+            flex: none;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+        }
+        .row .val {
+            width: 36px;
+            flex: none;
+            text-align: right;
+            font-size: 11.5px;
+            color: var(--muted);
+            font-variant-numeric: tabular-nums;
+        }
+        input[type=range] {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 2px;
+            background: var(--line);
+            border-radius: 2px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--deep);
+            border: 3px solid var(--paper);
+            cursor: pointer;
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--deep);
+            border: 3px solid var(--paper);
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex: 1;
+            padding: 13px 12px;
+            border: 1px solid var(--deep);
+            background: var(--deep);
+            color: #fff;
+            font-size: 13.5px;
+            font-weight: 700;
+            border-radius: var(--r);
+            cursor: pointer;
+        }
+        .btn.ghost {
+            background: transparent;
+            color: var(--deep);
+        }
+        .btn.sm {
+            padding: 10px;
+            font-size: 12.5px;
+            font-weight: 600;
+        }
+        .btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .drop {
+            width: 100%;
+            border: 1px dashed var(--line);
+            border-radius: var(--r);
+            background: none;
+            padding: 26px 14px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--muted);
+            cursor: pointer;
+            line-height: 1.5;
+        }
+        .drop.hot {
+            border-color: var(--deep);
+            color: var(--deep);
+            background: rgba(36, 58, 50, .05);
+        }
+
+        #mirror {
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            opacity: 0;
+            pointer-events: none;
+            white-space: pre;
+        }
+
+        .kbar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 60;
+            padding: 9px 12px calc(9px + env(safe-area-inset-bottom));
+            background: linear-gradient(to top, rgba(233, 231, 225, 1) 62%, rgba(233, 231, 225, 0));
+            display: flex;
+            justify-content: center;
+            transition: transform .25s ease, opacity .25s ease;
+        }
+        .kbar.gone {
+            transform: translateY(120%);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .kinner {
+            width: 100%;
+            max-width: 520px;
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            background: var(--kakao);
+            color: #191600;
+            border-radius: 12px;
+            padding: 11px 13px;
+            text-decoration: none;
+            box-shadow: 0 10px 24px -12px rgba(26, 26, 28, .5);
+            position: relative;
+        }
+        .kinner:active {
+            transform: scale(.99);
+        }
+        .kic {
+            width: 32px;
+            height: 32px;
+            flex: none;
+            border-radius: 50%;
+            background: #191600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ktx {
+            flex: 1;
+            min-width: 0;
+            line-height: 1.25;
+        }
+        .ktx b {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+        }
+        .ktx small {
+            display: block;
+            font-size: 11.5px;
+            opacity: .68;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .kcta {
+            flex: none;
+            background: #191600;
+            color: var(--kakao);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        .kx {
+            position: absolute;
+            top: -8px;
+            right: -6px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--card);
+            border: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        @media (min-width:920px) {
+            body {
+                padding-bottom: 96px;
+            }
+            .wrap {
+                display: grid;
+                grid-template-columns: 1fr 460px;
+                gap: 0;
+                align-items: start;
+            }
+            .left {
+                border-right: 1px solid var(--line);
+                min-height: calc(100vh - 50px);
+                order: 2;
+            }
+            .stage {
+                order: 1;
+                position: sticky;
+                top: 0;
+                border-bottom: 0;
+                padding: 28px 24px;
+                justify-content: center;
+                min-height: calc(100vh - 50px);
+            }
+            canvas {
+                max-width: min(400px, calc(72vh * .8));
+            }
+            .tabs {
+                top: 0;
+            }
+            .tpl {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>브랜딩 피드 템플릿</h1>
+        <span class="sub">사진 넣고 문구만 적으면 끝</span>
+        <span class="tag">1080 × 1350</span>
+    </header>
+
+    <div class="wrap">
+        <div class="stage">
+            <div class="plate"><canvas id="cv" width="1080" height="1350"></canvas></div>
+            <div class="stagebtns">
+                <button class="btn ghost sm" id="pickImg">사진 넣기</button>
+                <button class="btn sm" id="dl">이 장 저장</button>
+            </div>
+        </div>
+
+        <div class="left">
+            <div class="strip" id="strip"></div>
+
+            <div class="tabs" id="tabs">
+                <button data-t="0" class="on">템플릿</button>
+                <button data-t="1">문구</button>
+                <button data-t="2">효과</button>
+            </div>
+
+            <!-- 0. templates -->
+            <div class="panel" data-p="0">
+                <div class="grp">
+                    <span class="eyebrow">템플릿 고르기</span>
+                    <div class="tpl" id="tplList"></div>
+                    <div class="hint">템플릿을 누르면 현재 슬라이드의 배치·문구가 그 형식으로 바뀝니다. 사진은 그대로 유지돼요.</div>
+                </div>
+                <div class="grp">
+                    <span class="eyebrow">사진 업로드</span>
+                    <button class="drop" id="drop">사진을 끌어놓거나 눌러서 고르세요<br><span style="font-size:11.5px">세로 사진이 가장 잘 맞습니다</span></button>
+                    <div class="row" style="margin-top:14px"><span class="name">확대</span><input type="range" id="zoom" min="100" max="280" value="100"><span class="val" id="zoomV">1.0×</span></div>
+                    <div class="hint">미리보기를 손가락으로 끌어서 위치를 잡으세요.</div>
+                    <div class="btns"><button class="btn ghost sm" id="resetImg">위치·확대 초기화</button></div>
+                </div>
+                <div class="grp">
+                    <span class="eyebrow">아이디</span>
+                    <input type="text" id="handleTxt" placeholder="@아이디">
+                    <div class="hint">모든 슬라이드에 한 번에 적용됩니다.</div>
+                </div>
+                <div class="grp">
+                    <span class="eyebrow">저장</span>
+                    <div class="btns">
+                        <button class="btn ghost sm" id="dl2">이 장 저장</button>
+                        <button class="btn sm" id="dlAll">전체 저장</button>
+                    </div>
+                    <div class="hint">1080×1350 PNG로 내려받습니다. 인스타에 그대로 올리세요.</div>
+                </div>
+            </div>
+
+            <!-- 1. copy -->
+            <div class="panel" data-p="1" hidden>
+                <div class="grp" id="coverFields">
+                    <span class="eyebrow">표지 문구</span>
+                    <label class="f">윗줄 소개</label>
+                    <input type="text" id="eyebrowTxt">
+                    <label class="f">큰 제목 · 엔터로 줄바꿈</label>
+                    <textarea id="titleTxt" rows="2"></textarea>
+                    <label class="f">태그 · 쉼표로 구분 (비우면 숨김)</label>
+                    <input type="text" id="tagsTxt">
+                </div>
+                <div class="grp" id="contentFields" hidden>
+                    <span class="eyebrow">내용 문구</span>
+                    <label class="f">큰 제목 · 엔터로 줄바꿈</label>
+                    <textarea id="ctitleTxt" rows="2"></textarea>
+                    <label class="f">본문 · 엔터로 줄바꿈</label>
+                    <textarea id="bodyTxt" rows="6"></textarea>
+                    <div class="hint">한 줄이 길면 자동으로 접힙니다. 줄 끝을 직접 맞추면 예시처럼 가운데가 예쁘게 떨어져요.</div>
+                </div>
+                <div class="grp">
+                    <span class="eyebrow">글자 크기</span>
+                    <div class="row"><span class="name">제목</span><input type="range" id="tSize" min="38" max="96" value="72"><span class="val" id="tSizeV">72</span></div>
+                    <div class="row"><span class="name">본문</span><input type="range" id="bSize" min="22" max="46" value="32"><span class="val" id="bSizeV">32</span></div>
+                    <div class="row"><span class="name">태그</span><input type="range" id="tagSize" min="16" max="36" value="23"><span class="val" id="tagSizeV">23</span></div>
+                </div>
+            </div>
+
+            <!-- 2. effects -->
+            <div class="panel" data-p="2" hidden>
+                <div class="grp">
+                    <span class="eyebrow">그라데이션 · 그레인</span>
+                    <div class="row"><span class="name">그라데이션</span><input type="range" id="grad" min="0" max="100" value="90"><span class="val" id="gradV">90</span></div>
+                    <div class="row"><span class="name">번짐 높이</span><input type="range" id="gradH" min="30" max="100" value="64"><span class="val" id="gradHV">64</span></div>
+                    <div class="row"><span class="name">그레인</span><input type="range" id="grain" min="0" max="100" value="26"><span class="val" id="grainV">26</span></div>
+                    <div class="row"><span class="name">전체 어둡게</span><input type="range" id="dim" min="0" max="70" value="16"><span class="val" id="dimV">16</span></div>
+                </div>
+                <div class="grp">
+                    <span class="eyebrow">제목 정렬</span>
+                    <div class="row"><span class="name">정렬</span>
+                        <div class="seg" style="flex:1"><button id="alignL">왼쪽</button><button id="alignC">가운데</button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="kbar" id="kbar">
+        <a class="kinner" href="https://open.kakao.com/o/pfEDVwFi" target="_blank" rel="noopener">
+            <span class="kic">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="#FEE500"><path d="M12 3C6.9 3 2.8 6.3 2.8 10.3c0 2.6 1.7 4.9 4.3 6.2-.2.7-.7 2.5-.8 2.9-.1.5.2.5.4.4.2-.1 2.6-1.8 3.7-2.5.5.1 1.1.1 1.6.1 5.1 0 9.2-3.3 9.2-7.3S17.1 3 12 3z"/></svg>
+            </span>
+            <span class="ktx"><b>뷰티 1인샵 원장님들의 단톡방</b><small>템플릿·마케팅 자료 무료 공유 · 영구오빠</small></span>
+            <span class="kcta">참여</span>
+            <button class="kx" id="kx" aria-label="닫기">×</button>
+        </a>
+    </div>
+
+    <input type="file" id="file" accept="image/*" hidden>
+    <div id="mirror"></div>
+
+    <script>
+        const W = 1080,
+            H = 1350;
+        const cv = document.getElementById('cv'),
+            ctx = cv.getContext('2d');
+        const mirror = document.getElementById('mirror');
+        const el = id => document.getElementById(id);
+        const HANDLE = '@o9.oppa';
+
+        /* ---------- templates ---------- */
+        const TPL = [{
+            id: 'coverTag',
+            nm: '표지 · 태그형',
+            ds: '지역 + 시술 키워드',
+            type: 'cover',
+            eyebrow: '자연스러운 눈썹의 완성',
+            title: '홍대 눈썹문신\n영구오빠',
+            tags: '첫눈썹문신, 중년눈썹문신, 남자눈썹, 망한눈썹복구',
+            tSize: 70,
+            tagSize: 23,
+            align: 'left',
+            grad: 90,
+            gradH: 66,
+            grain: 26,
+            dim: 18
+        }, {
+            id: 'coverCopy',
+            nm: '표지 · 카피형',
+            ds: '시스템·철학 강조',
+            type: 'cover',
+            eyebrow: '하루 단 두 명, 정성을 다합니다',
+            title: '눈썹은 얼굴의 지문\n한 분 한 분 다르게 디자인합니다',
+            tags: '',
+            tSize: 64,
+            tagSize: 23,
+            align: 'left',
+            grad: 92,
+            gradH: 58,
+            grain: 26,
+            dim: 16
+        }, {
+            id: 'bodyBar',
+            nm: '내용 · 바 강조형',
+            ds: '세로 바 + 본문',
+            type: 'content',
+            title: '당신의 눈썹 고민,\n이제는 해결할 때입니다',
+            body: '눈썹은 단순한 털이 아니라 표정의 중심입니다.\n영구오빠는 8년 경력의 전문 시술사로서\n고객님 얼굴형과 라이프스타일에 꼭 맞는\n1:1 맞춤 디자인을 약속드립니다.\n첫 상담부터 사후 관리까지\n빈틈없이 책임집니다.',
+            tSize: 52,
+            bSize: 31,
+            tagSize: 23,
+            align: 'left',
+            grad: 92,
+            gradH: 62,
+            grain: 26,
+            dim: 16
+        }, {
+            id: 'bodyCenter',
+            nm: '내용 · 중앙형',
+            ds: '약속·원칙 문장',
+            type: 'content',
+            title: '가격이 아닌\n가치로 말하겠습니다',
+            body: '영구오빠는 유행 따라 바뀌는 눈썹이 아니라\n시간이 지나도 자연스러운 눈썹을 추구합니다.\n저렴한 가격 대신 정직한 시술,\n반짝 이벤트 대신 지속적인 책임.\n그것이 단골이 만들어준 신뢰의 이유입니다.',
+            tSize: 50,
+            bSize: 30,
+            tagSize: 23,
+            align: 'center',
+            grad: 94,
+            gradH: 64,
+            grain: 26,
+            dim: 18
+        }];
+
+        function newSlide(tplId) {
+            const t = TPL.find(x => x.id === tplId) || TPL[0];
+            return Object.assign({
+                img: null,
+                src: null,
+                zoom: 1,
+                ox: 0,
+                oy: 0,
+                handle: HANDLE,
+                eyebrow: '',
+                title: '',
+                tags: '',
+                body: '',
+                bSize: 32,
+                tagSize: 23
+            }, {
+                tpl: t.id,
+                type: t.type,
+                eyebrow: t.eyebrow || '',
+                title: t.title || '',
+                tags: t.tags || '',
+                body: t.body || '',
+                tSize: t.tSize,
+                bSize: t.bSize || 32,
+                tagSize: t.tagSize || 23,
+                align: t.align,
+                grad: t.grad,
+                gradH: t.gradH,
+                grain: t.grain,
+                dim: t.dim
+            });
+        }
+
+        function applyTpl(s, tplId) {
+            const t = TPL.find(x => x.id === tplId);
+            Object.assign(s, {
+                tpl: t.id,
+                type: t.type,
+                eyebrow: t.eyebrow || '',
+                title: t.title || '',
+                tags: t.tags || '',
+                body: t.body || '',
+                tSize: t.tSize,
+                bSize: t.bSize || 32,
+                tagSize: t.tagSize || 23,
+                align: t.align,
+                grad: t.grad,
+                gradH: t.gradH,
+                grain: t.grain,
+                dim: t.dim
+            });
+        }
+
+        const S = { slides: [newSlide('coverTag'), newSlide('bodyBar')], i: 0 };
+        const cur = () => S.slides[S.i];
+
+        /* ---------- grain ---------- */
+        const noise = document.createElement('canvas');
+        noise.width = W;
+        noise.height = H;
+        (function() {
+            const nc = noise.getContext('2d'),
+                d = nc.createImageData(W, H);
+            for (let p = 0; p < d.data.length; p += 4) {
+                const v = 110 + (Math.random() * 90 | 0);
+                d.data[p] = v;
+                d.data[p + 1] = v;
+                d.data[p + 2] = v;
+                d.data[p + 3] = 255;
+            }
+            nc.putImageData(d, 0, 0);
+        })();
+
+        /* ---------- helpers ---------- */
+        function lines(s) { return (s || '').split('\n').map(x => x.trim()).filter(Boolean); }
+
+        function wrap(c, text, maxW) {
+            const out = [];
+            for (const raw of lines(text)) {
+                if (c.measureText(raw).width <= maxW) { out.push(raw); continue; }
+                let ln = '';
+                for (const ch of raw) {
+                    const t = ln + ch;
+                    if (c.measureText(t).width > maxW && ln) { out.push(ln);
+                        ln = ch === ' ' ? '' : ch; } else ln = t;
+                }
+                if (ln) out.push(ln);
+            }
+            return out;
+        }
+
+        function sh(c, a) { c.shadowColor = 'rgba(0,0,0,' + a + ')';
+            c.shadowBlur = 24;
+            c.shadowOffsetY = 2; }
+
+        function noSh(c) { c.shadowColor = 'transparent';
+            c.shadowBlur = 0;
+            c.shadowOffsetY = 0; }
+
+        function ls(c, v) { if ('letterSpacing' in c) c.letterSpacing = v; }
+
+        function roundRect(c, x, y, w, h, r) {
+            c.beginPath();
+            c.moveTo(x + r, y);
+            c.arcTo(x + w, y, x + w, y + h, r);
+            c.arcTo(x + w, y + h, x, y + h, r);
+            c.arcTo(x, y + h, x, y, r);
+            c.arcTo(x, y, x + w, y, r);
+            c.closePath();
+        }
+
+        /* ---------- painters ---------- */
+        function paintPhoto(c, s) {
+            c.fillStyle = '#141416';
+            c.fillRect(0, 0, W, H);
+            if (!s.img) {
+                const g = c.createLinearGradient(0, 0, W, H);
+                g.addColorStop(0, '#3c3c42');
+                g.addColorStop(1, '#17171a');
+                c.fillStyle = g;
+                c.fillRect(0, 0, W, H);
+                return;
+            }
+            const im = s.img,
+                base = Math.max(W / im.naturalWidth, H / im.naturalHeight),
+                sc = base * s.zoom;
+            const w = im.naturalWidth * sc,
+                h = im.naturalHeight * sc;
+            const mx = Math.max(0, (w - W) / 2),
+                my = Math.max(0, (h - H) / 2);
+            s.ox = Math.max(-mx, Math.min(mx, s.ox));
+            s.oy = Math.max(-my, Math.min(my, s.oy));
+            c.drawImage(im, (W - w) / 2 + s.ox, (H - h) / 2 + s.oy, w, h);
+        }
+
+        function paintOverlay(c, s) {
+            if (s.dim > 0) { c.fillStyle = 'rgba(0,0,0,' + (s.dim / 100) + ')';
+                c.fillRect(0, 0, W, H); }
+            const gs = s.grad / 100;
+            if (gs > 0) {
+                const top = H * (1 - s.gradH / 100);
+                const g = c.createLinearGradient(0, top, 0, H);
+                g.addColorStop(0, 'rgba(0,0,0,0)');
+                g.addColorStop(.42, 'rgba(0,0,0,' + (gs * .30).toFixed(3) + ')');
+                g.addColorStop(.75, 'rgba(0,0,0,' + (gs * .70).toFixed(3) + ')');
+                g.addColorStop(1, 'rgba(0,0,0,' + (gs * .93).toFixed(3) + ')');
+                c.fillStyle = g;
+                c.fillRect(0, top, W, H - top);
+                const t = c.createLinearGradient(0, 0, 0, H * .2);
+                t.addColorStop(0, 'rgba(0,0,0,' + (gs * .32).toFixed(3) + ')');
+                t.addColorStop(1, 'rgba(0,0,0,0)');
+                c.fillStyle = t;
+                c.fillRect(0, 0, W, H * .2);
+            }
+            if (s.grain > 0) {
+                c.save();
+                c.globalCompositeOperation = 'overlay';
+                c.globalAlpha = s.grain / 100 * .55;
+                c.drawImage(noise, 0, 0);
+                c.restore();
+            }
+        }
+
+        function paintSignature(c, s, M) {
+            const txt = (s.handle || '').trim();
+            const y = H - 52;
+            c.textBaseline = 'alphabetic';
+            c.textAlign = 'left';
+            c.font = '500 25px Pretendard, sans-serif';
+            ls(c, '0.08em');
+            sh(c, .35);
+            c.fillStyle = 'rgba(255,255,255,.46)';
+            c.fillText(txt, M, y);
+            const w = c.measureText(txt).width;
+            noSh(c);
+            ls(c, '0px');
+            c.strokeStyle = 'rgba(255,255,255,.26)';
+            c.lineWidth = 1.4;
+            c.beginPath();
+            c.moveTo(M + (txt ? w + 22 : 0), y - 8);
+            c.lineTo(W - M, y - 8);
+            c.stroke();
+        }
+
+        function paintCover(c, s) {
+            const M = 74,
+                maxW = W - M * 2;
+            c.textBaseline = 'alphabetic';
+            paintSignature(c, s, M);
+
+            let bottom = H - 136;
+            const tags = (s.tags || '').split(',').map(t => t.trim()).filter(Boolean);
+            const tagFontSize = s.tagSize || 23;
+            if (tags.length) {
+                const chipH = tagFontSize * 2.4,
+                    gap = 8,
+                    padX = tagFontSize * 0.9,
+                    r = chipH / 2;
+                c.font = '600 ' + tagFontSize + 'px Pretendard, sans-serif';
+                const rows = [];
+                let row = [],
+                    rw = 0;
+                tags.forEach((t, gi) => {
+                    const w = c.measureText(t).width + padX * 2;
+                    if (rw + w + (row.length ? gap : 0) > maxW && row.length) { rows.push({ items: row,
+                            w: rw });
+                        row = [];
+                        rw = 0; }
+                    rw += w + (row.length ? gap : 0);
+                    row.push({ t, w, gi });
+                });
+                if (row.length) rows.push({ items: row, w: rw });
+                let y = H - 138 - rows.length * chipH - (rows.length - 1) * gap;
+                bottom = y - 44;
+                rows.forEach(rr => {
+                    let x = (W - rr.w) / 2; // 중앙 정렬
+                    rr.items.forEach((it, idx) => {
+                        const solid = it.gi % 2 === 0;
+                        c.textAlign = 'center';
+                        if (solid) {
+                            sh(c, .34);
+                            c.fillStyle = '#FFFFFF';
+                            roundRect(c, x, y, it.w, chipH, r);
+                            c.fill();
+                            noSh(c);
+                            c.fillStyle = '#18181A';
+                        } else {
+                            sh(c, .34);
+                            c.strokeStyle = 'rgba(255,255,255,.9)';
+                            c.lineWidth = 1.8;
+                            roundRect(c, x, y, it.w, chipH, r);
+                            c.stroke();
+                            noSh(c);
+                            c.fillStyle = '#FFFFFF';
+                        }
+                        c.fillText(it.t, x + it.w / 2, y + chipH / 2 + tagFontSize * 0.37);
+                        x += it.w + gap;
+                    });
+                    y += chipH + gap;
+                });
+                noSh(c);
+            }
+
+            sh(c, .5);
+            const ts = s.tSize,
+                lh = ts * 1.24;
+            c.font = '800 ' + ts + 'px Pretendard, sans-serif';
+            ls(c, '-0.025em');
+            const tl = wrap(c, s.title, maxW);
+            c.textAlign = s.align === 'center' ? 'center' : 'left';
+            const tx = s.align === 'center' ? W / 2 : M;
+            c.fillStyle = '#fff';
+            tl.forEach((ln, k) => c.fillText(ln, tx, bottom - (tl.length - 1 - k) * lh));
+            ls(c, '0px');
+
+            const eb = lines(s.eyebrow);
+            if (eb.length) {
+                c.font = '600 26px Pretendard, sans-serif';
+                ls(c, '0.01em');
+                c.fillStyle = 'rgba(255,255,255,.94)';
+                let y = bottom - (tl.length - 1) * lh - ts * .80 - 28;
+                for (let k = eb.length - 1; k >= 0; k--) { c.fillText(eb[k], tx, y);
+                    y -= 38; }
+                ls(c, '0px');
+            }
+            noSh(c);
+        }
+
+        function paintContent(c, s) {
+            const M = 64,
+                maxW = W - M * 2;
+            c.textBaseline = 'alphabetic';
+            sh(c, .45);
+            c.textAlign = 'right';
+            c.font = '500 25px Pretendard, sans-serif';
+            ls(c, '0.08em');
+            c.fillStyle = 'rgba(255,255,255,.72)';
+            c.fillText((s.handle || '').trim(), W - M, 58);
+            ls(c, '0px');
+
+            const bs = s.bSize,
+                blh = bs * 1.48;
+            c.font = '500 ' + bs + 'px Pretendard, sans-serif';
+            const bl = wrap(c, s.body, W - 190);
+            const bodyBottom = H - 74;
+            c.textAlign = 'center';
+            c.fillStyle = 'rgba(255,255,255,.95)';
+            bl.forEach((ln, k) => c.fillText(ln, W / 2, bodyBottom - (bl.length - 1 - k) * blh));
+
+            const ts = s.tSize,
+                lh = ts * 1.32,
+                centered = s.align === 'center';
+            c.font = '800 ' + ts + 'px Pretendard, sans-serif';
+            ls(c, '-0.025em');
+            const tl = wrap(c, s.title, maxW - (centered ? 0 : 32));
+            const titleBottom = bl.length ? (bodyBottom - (bl.length - 1) * blh - bs * .8 - 46) : H - 150;
+            c.fillStyle = '#fff';
+            if (centered) {
+                c.textAlign = 'center';
+                tl.forEach((ln, k) => c.fillText(ln, W / 2, titleBottom - (tl.length - 1 - k) * lh));
+            } else {
+                c.textAlign = 'left';
+                tl.forEach((ln, k) => c.fillText(ln, M + 28, titleBottom - (tl.length - 1 - k) * lh));
+                if (tl.length) {
+                    const top = titleBottom - (tl.length - 1) * lh - ts * .86;
+                    noSh(c);
+                    c.fillStyle = '#fff';
+                    c.fillRect(M, top, 7, (titleBottom + ts * .2) - top);
+                    sh(c, .45);
+                }
+            }
+            ls(c, '0px');
+            noSh(c);
+        }
+
+        function paint(c, s, idx) {
+            c.setTransform(1, 0, 0, 1, 0, 0);
+            c.clearRect(0, 0, W, H);
+            paintPhoto(c, s);
+            paintOverlay(c, s);
+            if (s.type === 'cover') paintCover(c, s);
+            else paintContent(c, s);
+        }
+
+        function draw() { paint(ctx, cur(), S.i);
+            paintStrip(); }
+
+        function primeFonts(s) {
+            mirror.textContent = '';
+            [
+                [800, (s.title || '')],
+                [600, (s.eyebrow || '') + (s.tags || '')],
+                [500, (s.body || '') + (s.handle || '')]
+            ].forEach(([w, t]) => {
+                const sp = document.createElement('span');
+                sp.style.cssText = 'font-family:Pretendard;font-weight:' + w + ';font-size:20px';
+                sp.textContent = t;
+                mirror.appendChild(sp);
+            });
+        }
+
+        function render() { primeFonts(cur());
+            draw();
+            document.fonts.ready.then(draw); }
+
+        /* ---------- template cards ---------- */
+        const tplList = el('tplList');
+        TPL.forEach(t => {
+            const b = document.createElement('button');
+            b.className = 'tplcard';
+            b.dataset.id = t.id;
+            const mini = document.createElement('canvas');
+            mini.width = W / 3;
+            mini.height = H / 3;
+            b.appendChild(mini);
+            const nm = document.createElement('span');
+            nm.className = 'nm';
+            nm.textContent = t.nm;
+            const ds = document.createElement('span');
+            ds.className = 'ds';
+            ds.textContent = t.ds;
+            b.appendChild(nm);
+            b.appendChild(ds);
+            b.onclick = () => { applyTpl(cur(), t.id);
+                syncForm();
+                render(); };
+            tplList.appendChild(b);
+            const mc = mini.getContext('2d');
+            mc.setTransform(1 / 3, 0, 0, 1 / 3, 0, 0);
+            const demo = newSlide(t.id);
+            demo.handle = HANDLE;
+            document.fonts.ready.then(() => { paint(mc, demo, 0); });
+        });
+
+        function markTpl() {
+            [...tplList.children].forEach(b => b.classList.toggle('on', b.dataset.id === cur().tpl));
+        }
+
+        /* ---------- strip ---------- */
+        const strip = el('strip');
+
+        function buildStrip() {
+            strip.innerHTML = '';
+            S.slides.forEach((s, idx) => {
+                const d = document.createElement('div');
+                d.className = 'frame';
+                d.innerHTML = '<span class="n">' + (idx + 1) + '</span>';
+                if (S.slides.length > 1) {
+                    const k = document.createElement('button');
+                    k.className = 'kill';
+                    k.textContent = '×';
+                    k.onclick = e => { e.stopPropagation();
+                        S.slides.splice(idx, 1);
+                        S.i = Math.min(S.i, S.slides.length - 1);
+                        buildStrip();
+                        syncForm();
+                        render(); };
+                    d.appendChild(k);
+                }
+                d.onclick = () => { S.i = idx;
+                    syncForm();
+                    render(); };
+                strip.appendChild(d);
+            });
+            const add = document.createElement('button');
+            add.className = 'addframe';
+            add.textContent = '+';
+            add.onclick = () => {
+                const b = cur(),
+                    n = newSlide('bodyBar');
+                n.handle = b.handle;
+                n.grain = b.grain;
+                n.dim = b.dim;
+                n.grad = b.grad;
+                n.gradH = b.gradH;
+                S.slides.push(n);
+                S.i = S.slides.length - 1;
+                buildStrip();
+                syncForm();
+                render();
+            };
+            strip.appendChild(add);
+            paintStrip();
+        }
+
+        function paintStrip() {
+            [...strip.querySelectorAll('.frame')].forEach((elm, idx) => {
+                elm.classList.toggle('active', idx === S.i);
+                const src = S.slides[idx] && S.slides[idx].src;
+                elm.style.backgroundImage = src ? 'url(' + src + ')' : 'none';
+            });
+        }
+
+        /* ---------- tabs ---------- */
+        el('tabs').onclick = e => {
+            const b = e.target.closest('button');
+            if (!b) return;
+            [...el('tabs').children].forEach(x => x.classList.toggle('on', x === b));
+            document.querySelectorAll('.panel').forEach(p => p.hidden = p.dataset.p !== b.dataset.t);
+        };
+
+        /* ---------- inputs ---------- */
+        const F = { eyebrowTxt: 'eyebrow', titleTxt: 'title', tagsTxt: 'tags', ctitleTxt: 'title',
+            bodyTxt: 'body' };
+        Object.keys(F).forEach(id => el(id).addEventListener('input', e => { cur()[F[id]] = e.target
+                .value;
+            render(); }));
+        el('handleTxt').addEventListener('input', e => { S.slides.forEach(s => s.handle = e.target.value);
+            render(); });
+
+        const R = {
+            zoom: ['zoom', v => v / 100, v => (v / 100).toFixed(1) + '×'],
+            grad: ['grad'],
+            gradH: ['gradH'],
+            grain: ['grain'],
+            dim: ['dim'],
+            tSize: ['tSize'],
+            bSize: ['bSize'],
+            tagSize: ['tagSize']
+        };
+        Object.keys(R).forEach(id => {
+            el(id).addEventListener('input', e => {
+                const v = +e.target.value,
+                    cfg = R[id];
+                cur()[cfg[0]] = cfg[1] ? cfg[1](v) : v;
+                el(id + 'V').textContent = cfg[2] ? cfg[2](v) : v;
+                render();
+            });
+        });
+        el('alignL').onclick = () => { cur().align = 'left';
+            syncForm();
+            render(); };
+        el('alignC').onclick = () => { cur().align = 'center';
+            syncForm();
+            render(); };
+
+        function syncForm() {
+            const s = cur();
+            markTpl();
+            el('coverFields').hidden = s.type !== 'cover';
+            el('contentFields').hidden = s.type === 'cover';
+            el('eyebrowTxt').value = s.eyebrow;
+            el('titleTxt').value = s.title;
+            el('tagsTxt').value = s.tags;
+            el('ctitleTxt').value = s.title;
+            el('bodyTxt').value = s.body;
+            el('handleTxt').value = s.handle;
+            el('zoom').value = Math.round(s.zoom * 100);
+            el('zoomV').textContent = s.zoom.toFixed(1) + '×';
+            ['grad', 'gradH', 'grain', 'dim', 'tSize', 'bSize', 'tagSize'].forEach(k => { el(k).value = s[
+                    k];
+                el(k + 'V').textContent = s[k]; });
+            el('alignL').classList.toggle('on', s.align !== 'center');
+            el('alignC').classList.toggle('on', s.align === 'center');
+            paintStrip();
+        }
+
+        /* ---------- image ---------- */
+        const file = el('file');
+
+        function loadFile(f) {
+            if (!f || !f.type.startsWith('image/')) return;
+            const fr = new FileReader();
+            fr.onload = () => {
+                const im = new Image();
+                im.onload = () => { const s = cur();
+                    s.img = im;
+                    s.src = fr.result;
+                    s.ox = 0;
+                    s.oy = 0;
+                    render(); };
+                im.src = fr.result;
+            };
+            fr.readAsDataURL(f);
+        }
+        file.onchange = e => { loadFile(e.target.files[0]);
+            file.value = ''; };
+        el('drop').onclick = () => file.click();
+        el('pickImg').onclick = () => file.click();
+        el('resetImg').onclick = () => { const s = cur();
+            s.ox = 0;
+            s.oy = 0;
+            s.zoom = 1;
+            syncForm();
+            render(); };
+        ['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault();
+            el('drop').classList.add('hot'); }));
+        document.addEventListener('dragleave', e => { if (e.target === document.body) el('drop').classList
+                .remove('hot'); });
+        document.addEventListener('drop', e => { e.preventDefault();
+            el('drop').classList.remove('hot');
+            loadFile(e.dataTransfer.files[0]); });
+
+        /* ---------- drag ---------- */
+        let drag = null;
+        cv.addEventListener('pointerdown', e => {
+            if (!cur().img) return;
+            drag = { x: e.clientX, y: e.clientY, ox: cur().ox, oy: cur().oy, k: W / cv
+                    .getBoundingClientRect().width };
+            cv.setPointerCapture(e.pointerId);
+            cv.classList.add('dragging');
+        });
+        cv.addEventListener('pointermove', e => {
+            if (!drag) return;
+            const s = cur();
+            s.ox = drag.ox + (e.clientX - drag.x) * drag.k;
+            s.oy = drag.oy + (e.clientY - drag.y) * drag.k;
+            draw();
+        });
+        ['pointerup', 'pointercancel'].forEach(ev => cv.addEventListener(ev, () => { drag = null;
+            cv.classList.remove('dragging'); }));
+
+        /* ---------- save ---------- */
+        function saveAt(idx) {
+            return new Promise(res => {
+                primeFonts(S.slides[idx]);
+                document.fonts.ready.then(() => {
+                    const off = document.createElement('canvas');
+                    off.width = W;
+                    off.height = H;
+                    paint(off.getContext('2d'), S.slides[idx], idx);
+                    off.toBlob(b => {
+                        const a = document.createElement('a');
+                        a.href = URL.createObjectURL(b);
+                        a.download = 'feed_' + String(idx + 1).padStart(2, '0') + '.png';
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+                        res();
+                    }, 'image/png');
+                });
+            });
+        }
+        el('dl').onclick = () => saveAt(S.i);
+        el('dl2').onclick = () => saveAt(S.i);
+        el('dlAll').onclick = async () => { for (let k = 0; k < S.slides.length; k++) { await saveAt(k);
+                await new Promise(r => setTimeout(r, 450)); } };
+
+        /* ---------- kakao bar ---------- */
+        el('kx').onclick = e => { e.preventDefault();
+            e.stopPropagation();
+            el('kbar').classList.add('gone');
+            document.body.style.paddingBottom = '24px'; };
+
+        /* ---------- go ---------- */
+        buildStrip();
+        syncForm();
+        render();
+    </script>
+</body>
+</html>
+```
