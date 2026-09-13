@@ -19,6 +19,8 @@
             --r: 5px;
             --bar: 78px;
             --vvh: 100vh;
+            /* 모바일 미리보기 높이: 화면의 30% (가로폭 기준 상한 60vw) */
+            --cvh: min(60vw, calc(var(--vvh) * .30));
         }
         @supports (height: 100dvh) {
             :root {
@@ -71,7 +73,7 @@
 
         header {
             flex: none;
-            padding: 12px 16px;
+            padding: 7px 16px;
             border-bottom: 1px solid var(--line);
             display: flex;
             align-items: baseline;
@@ -79,7 +81,7 @@
         }
         header h1 {
             margin: 0;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 800;
             letter-spacing: -.02em;
         }
@@ -105,20 +107,22 @@
             flex-direction: column;
         }
 
+        /* 위 프레임: 미리보기(왼쪽) + 버튼·슬라이드 열(오른쪽) */
         .stage {
             flex: none;
-            max-height: 62%;
-            overflow-y: auto;
-            overscroll-behavior: contain;
+            height: calc(var(--cvh) + 34px);
+            overflow: hidden;
             background: var(--paper);
-            padding: 10px 16px;
+            padding: 8px 14px;
             border-bottom: 1px solid var(--line);
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
+            align-items: stretch;
+            justify-content: center;
+            gap: 10px;
         }
         .plate {
+            flex: none;
+            align-self: flex-start;
             background: var(--card);
             padding: 8px;
             border: 1px solid var(--line);
@@ -129,18 +133,35 @@
             width: 100%;
             height: auto;
             background: #111;
-            max-width: min(72vw, calc(var(--vvh) * .38 * .8));
+            max-width: calc(var(--cvh) * .8);
             cursor: grab;
             touch-action: none;
         }
         canvas.dragging {
             cursor: grabbing;
         }
-        .stagebtns {
+        .side {
+            flex: 1;
+            min-width: 0;
+            min-height: 0;
             display: flex;
-            gap: 7px;
-            width: 100%;
-            max-width: 420px;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            scrollbar-width: none;
+        }
+        .side::-webkit-scrollbar {
+            display: none;
+        }
+        .stagebtns {
+            flex: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .stagebtns .btn.sm {
+            padding: 9px 6px;
         }
 
         .left {
@@ -152,20 +173,13 @@
         .strip {
             flex: none;
             display: flex;
-            gap: 7px;
-            align-items: center;
-            overflow-x: auto;
-            padding: 8px 16px;
-            border-bottom: 1px solid var(--line-soft);
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-        }
-        .strip::-webkit-scrollbar {
-            display: none;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 6px 6px 0 0;
         }
         .frame {
             flex: none;
-            width: 44px;
+            width: 36px;
             aspect-ratio: 4/5;
             border: 1px solid var(--line);
             border-radius: 2px;
@@ -177,7 +191,7 @@
         }
         .frame.active {
             outline: 2px solid var(--deep);
-            outline-offset: 2px;
+            outline-offset: 1px;
         }
         .frame .n {
             font-size: 9px;
@@ -205,12 +219,12 @@
         }
         .addframe {
             flex: none;
-            width: 44px;
+            width: 36px;
             aspect-ratio: 4/5;
             border: 1px dashed var(--line);
             background: none;
             color: var(--muted);
-            font-size: 18px;
+            font-size: 16px;
             border-radius: 2px;
             cursor: pointer;
         }
@@ -459,6 +473,43 @@
             background: rgba(36, 58, 50, .05);
         }
 
+        /* 크게 보기: 미리보기 전체 화면 */
+        .big {
+            position: fixed;
+            inset: 0;
+            z-index: 80;
+            background: rgba(20, 20, 22, .96);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            padding: 16px;
+        }
+        .big[hidden] {
+            display: none;
+        }
+        .big .plate {
+            align-self: center;
+        }
+        .big canvas {
+            max-width: min(92vw, calc((var(--vvh) - 120px) * .8));
+        }
+        .bigbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, .7);
+            font-size: 12.5px;
+        }
+        .bigbar .btn {
+            flex: none;
+            background: #fff;
+            color: var(--ink);
+            border-color: #fff;
+            padding: 9px 18px;
+        }
+
         #mirror {
             position: fixed;
             left: -9999px;
@@ -563,15 +614,41 @@
             }
             .stage {
                 flex: 1;
-                max-height: none;
+                height: auto;
                 order: 1;
+                flex-direction: column;
+                align-items: center;
+                justify-content: safe center;
+                gap: 12px;
+                overflow-y: auto;
                 border-bottom: 0;
                 border-right: 1px solid var(--line);
                 padding: 28px 24px calc(28px + var(--bar));
-                justify-content: safe center;
+            }
+            .plate {
+                align-self: auto;
             }
             canvas {
-                max-width: min(400px, calc((var(--vvh) - var(--bar) - 190px) * .8));
+                max-width: min(400px, calc((var(--vvh) - var(--bar) - 250px) * .8));
+            }
+            .side {
+                flex: none;
+                width: 100%;
+                max-width: 420px;
+                overflow: visible;
+                gap: 12px;
+            }
+            .stagebtns {
+                flex-direction: row;
+                gap: 7px;
+            }
+            .strip {
+                justify-content: center;
+                padding: 6px 0 0;
+            }
+            .frame,
+            .addframe {
+                width: 44px;
             }
             .left {
                 flex: none;
@@ -589,17 +666,19 @@
     </header>
 
     <div class="wrap">
-        <div class="stage">
-            <div class="plate"><canvas id="cv" width="1080" height="1350"></canvas></div>
-            <div class="stagebtns">
-                <button class="btn ghost sm" id="pickImg">사진 넣기</button>
-                <button class="btn sm" id="dl">이 장 저장</button>
+        <div class="stage" id="stage">
+            <div class="plate" id="plate"><canvas id="cv" width="1080" height="1350"></canvas></div>
+            <div class="side">
+                <div class="stagebtns">
+                    <button class="btn ghost sm" id="pickImg">사진 넣기</button>
+                    <button class="btn sm" id="dl">이 장 저장</button>
+                    <button class="btn ghost sm" id="bigView">크게 보기</button>
+                </div>
+                <div class="strip" id="strip"></div>
             </div>
         </div>
 
         <div class="left">
-            <div class="strip" id="strip"></div>
-
             <div class="tabs" id="tabs">
                 <button data-t="0" class="on">템플릿</button>
                 <button data-t="1">문구</button>
@@ -696,6 +775,10 @@
             <span class="kcta">참여</span>
             <button class="kx" id="kx" aria-label="닫기">×</button>
         </a>
+    </div>
+
+    <div class="big" id="big" hidden>
+        <div class="bigbar"><span>손가락으로 끌어 사진 위치를 잡으세요</span><button class="btn sm" id="bigClose">닫기</button></div>
     </div>
 
     <input type="file" id="file" accept="image/*" hidden>
@@ -1425,6 +1508,21 @@
         });
         ['pointerup', 'pointercancel'].forEach(ev => cv.addEventListener(ev, () => { drag = null;
             cv.classList.remove('dragging'); }));
+
+        /* ---------- big view ---------- */
+        const big = el('big'),
+            plate = el('plate'),
+            stage = el('stage');
+
+        function openBig() { big.insertBefore(plate, big.firstChild);
+            big.hidden = false; }
+
+        function closeBig() { stage.insertBefore(plate, stage.firstChild);
+            big.hidden = true; }
+        el('bigView').onclick = openBig;
+        el('bigClose').onclick = closeBig;
+        big.addEventListener('click', e => { if (e.target === big) closeBig(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && !big.hidden) closeBig(); });
 
         /* ---------- save ---------- */
         function saveAt(idx) {
