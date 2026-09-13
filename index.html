@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -19,6 +18,12 @@
             --kakao: #FEE500;
             --r: 5px;
             --bar: 78px;
+            --vvh: 100vh;
+        }
+        @supports (height: 100dvh) {
+            :root {
+                --vvh: 100dvh;
+            }
         }
         * {
             box-sizing: border-box;
@@ -29,13 +34,25 @@
             margin: 0;
             padding: 0;
         }
+        /* 전체 화면 고정: 문서는 스크롤하지 않고, 위(미리보기)/아래(설정) 프레임이 각자 스크롤 */
+        html {
+            height: 100%;
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
         body {
+            height: var(--vvh);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
             background: var(--paper);
             color: var(--ink);
             font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
             font-size: 14px;
             line-height: 1.5;
-            padding-bottom: calc(var(--bar) + env(safe-area-inset-bottom));
+        }
+        body.nokbar {
+            --bar: 0px;
         }
         button,
         input,
@@ -53,7 +70,8 @@
         }
 
         header {
-            padding: 14px 16px;
+            flex: none;
+            padding: 12px 16px;
             border-bottom: 1px solid var(--line);
             display: flex;
             align-items: baseline;
@@ -80,14 +98,20 @@
         .wrap {
             max-width: 1160px;
             margin: 0 auto;
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .stage {
-            position: sticky;
-            top: 0;
-            z-index: 20;
+            flex: none;
+            max-height: 62%;
+            overflow-y: auto;
+            overscroll-behavior: contain;
             background: var(--paper);
-            padding: 12px 16px 10px;
+            padding: 10px 16px;
             border-bottom: 1px solid var(--line);
             display: flex;
             flex-direction: column;
@@ -105,7 +129,7 @@
             width: 100%;
             height: auto;
             background: #111;
-            max-width: min(74vw, calc(46vh * .8));
+            max-width: min(72vw, calc(var(--vvh) * .38 * .8));
             cursor: grab;
             touch-action: none;
         }
@@ -119,12 +143,19 @@
             max-width: 420px;
         }
 
+        .left {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
         .strip {
+            flex: none;
             display: flex;
             gap: 7px;
             align-items: center;
             overflow-x: auto;
-            padding: 11px 16px;
+            padding: 8px 16px;
             border-bottom: 1px solid var(--line-soft);
             -webkit-overflow-scrolling: touch;
             scrollbar-width: none;
@@ -185,15 +216,14 @@
         }
 
         .tabs {
+            flex: none;
             display: flex;
             border-bottom: 1px solid var(--line);
-            position: sticky;
-            top: 0;
             background: var(--paper);
         }
         .tabs button {
             flex: 1;
-            padding: 12px 4px;
+            padding: 11px 4px;
             background: none;
             border: 0;
             border-bottom: 2px solid transparent;
@@ -207,10 +237,20 @@
             border-bottom-color: var(--deep);
             font-weight: 700;
         }
+        .panels {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: calc(var(--bar) + 16px + env(safe-area-inset-bottom));
+        }
         .panel {
             padding: 16px 16px 28px;
         }
-        .panel[hidden] {
+        .panel[hidden],
+        .grp[hidden],
+        .row[hidden] {
             display: none;
         }
 
@@ -339,7 +379,7 @@
             color: var(--muted);
         }
         .row .val {
-            width: 36px;
+            width: 40px;
             flex: none;
             text-align: right;
             font-size: 11.5px;
@@ -518,37 +558,25 @@
         }
 
         @media (min-width:920px) {
-            body {
-                padding-bottom: 96px;
-            }
             .wrap {
-                display: grid;
-                grid-template-columns: 1fr 460px;
-                gap: 0;
-                align-items: start;
-            }
-            .left {
-                border-right: 1px solid var(--line);
-                min-height: calc(100vh - 50px);
-                order: 2;
+                flex-direction: row;
             }
             .stage {
+                flex: 1;
+                max-height: none;
                 order: 1;
-                position: sticky;
-                top: 0;
                 border-bottom: 0;
-                padding: 28px 24px;
-                justify-content: center;
-                min-height: calc(100vh - 50px);
+                border-right: 1px solid var(--line);
+                padding: 28px 24px calc(28px + var(--bar));
+                justify-content: safe center;
             }
             canvas {
-                max-width: min(400px, calc(72vh * .8));
+                max-width: min(400px, calc((var(--vvh) - var(--bar) - 190px) * .8));
             }
-            .tabs {
-                top: 0;
-            }
-            .tpl {
-                grid-template-columns: 1fr 1fr;
+            .left {
+                flex: none;
+                width: 460px;
+                order: 2;
             }
         }
     </style>
@@ -575,9 +603,11 @@
             <div class="tabs" id="tabs">
                 <button data-t="0" class="on">템플릿</button>
                 <button data-t="1">문구</button>
-                <button data-t="2">효과</button>
+                <button data-t="2">위치</button>
+                <button data-t="3">효과</button>
             </div>
 
+            <div class="panels" id="panels">
             <!-- 0. templates -->
             <div class="panel" data-p="0">
                 <div class="grp">
@@ -629,13 +659,16 @@
                 <div class="grp">
                     <span class="eyebrow">글자 크기</span>
                     <div class="row"><span class="name">제목</span><input type="range" id="tSize" min="38" max="96" value="72"><span class="val" id="tSizeV">72</span></div>
-                    <div class="row"><span class="name">본문</span><input type="range" id="bSize" min="22" max="46" value="32"><span class="val" id="bSizeV">32</span></div>
-                    <div class="row"><span class="name">태그</span><input type="range" id="tagSize" min="16" max="36" value="23"><span class="val" id="tagSizeV">23</span></div>
+                    <div class="row" id="bSizeRow"><span class="name">본문</span><input type="range" id="bSize" min="22" max="46" value="32"><span class="val" id="bSizeV">32</span></div>
+                    <div class="row" id="tagSizeRow"><span class="name">태그</span><input type="range" id="tagSize" min="16" max="36" value="23"><span class="val" id="tagSizeV">23</span></div>
                 </div>
             </div>
 
-            <!-- 2. effects -->
-            <div class="panel" data-p="2" hidden>
+            <!-- 2. position (내용은 JS에서 생성) -->
+            <div class="panel" data-p="2" id="posPanel" hidden></div>
+
+            <!-- 3. effects -->
+            <div class="panel" data-p="3" hidden>
                 <div class="grp">
                     <span class="eyebrow">그라데이션 · 그레인</span>
                     <div class="row"><span class="name">그라데이션</span><input type="range" id="grad" min="0" max="100" value="90"><span class="val" id="gradV">90</span></div>
@@ -649,6 +682,7 @@
                         <div class="seg" style="flex:1"><button id="alignL">왼쪽</button><button id="alignC">가운데</button></div>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     </div>
@@ -739,6 +773,17 @@
             dim: 18
         }];
 
+        /* ---------- position offsets ---------- */
+        const POS_KEYS = ['all', 'eyebrow', 'title', 'tags', 'body', 'handle'];
+
+        function newPos() { const p = {};
+            POS_KEYS.forEach(k => p[k] = { x: 0, y: 0 });
+            return p; }
+        /* 요소별 최종 오프셋 = 전체 이동 + 개별 이동 (아이디는 개별만) */
+        function pOff(s, k) { const p = s.pos || (s.pos = newPos()),
+                a = k === 'handle' ? { x: 0, y: 0 } : p.all;
+            return { x: a.x + p[k].x, y: a.y + p[k].y }; }
+
         function newSlide(tplId) {
             const t = TPL.find(x => x.id === tplId) || TPL[0];
             return Object.assign({
@@ -756,6 +801,7 @@
                 tagSize: 23
             }, {
                 tpl: t.id,
+                pos: newPos(),
                 type: t.type,
                 eyebrow: t.eyebrow || '',
                 title: t.title || '',
@@ -776,6 +822,7 @@
             const t = TPL.find(x => x.id === tplId);
             Object.assign(s, {
                 tpl: t.id,
+                pos: newPos(),
                 type: t.type,
                 eyebrow: t.eyebrow || '',
                 title: t.title || '',
@@ -927,7 +974,11 @@
             const M = 74,
                 maxW = W - M * 2;
             c.textBaseline = 'alphabetic';
+            const oh = pOff(s, 'handle');
+            c.save();
+            c.translate(oh.x, oh.y);
             paintSignature(c, s, M);
+            c.restore();
 
             let bottom = H - 136;
             const tags = (s.tags || '').split(',').map(t => t.trim()).filter(Boolean);
@@ -953,6 +1004,9 @@
                 if (row.length) rows.push({ items: row, w: rw });
                 let y = H - 138 - rows.length * chipH - (rows.length - 1) * gap;
                 bottom = y - 44;
+                const og = pOff(s, 'tags');
+                c.save();
+                c.translate(og.x, og.y);
                 rows.forEach(rr => {
                     let x = (W - rr.w) / 2; // 중앙 정렬
                     rr.items.forEach((it, idx) => {
@@ -979,6 +1033,7 @@
                     });
                     y += chipH + gap;
                 });
+                c.restore();
                 noSh(c);
             }
 
@@ -991,7 +1046,11 @@
             c.textAlign = s.align === 'center' ? 'center' : 'left';
             const tx = s.align === 'center' ? W / 2 : M;
             c.fillStyle = '#fff';
+            const ot = pOff(s, 'title');
+            c.save();
+            c.translate(ot.x, ot.y);
             tl.forEach((ln, k) => c.fillText(ln, tx, bottom - (tl.length - 1 - k) * lh));
+            c.restore();
             ls(c, '0px');
 
             const eb = lines(s.eyebrow);
@@ -1000,8 +1059,12 @@
                 ls(c, '0.01em');
                 c.fillStyle = 'rgba(255,255,255,.94)';
                 let y = bottom - (tl.length - 1) * lh - ts * .80 - 28;
+                const oe = pOff(s, 'eyebrow');
+                c.save();
+                c.translate(oe.x, oe.y);
                 for (let k = eb.length - 1; k >= 0; k--) { c.fillText(eb[k], tx, y);
                     y -= 38; }
+                c.restore();
                 ls(c, '0px');
             }
             noSh(c);
@@ -1016,7 +1079,11 @@
             c.font = '500 25px Pretendard, sans-serif';
             ls(c, '0.08em');
             c.fillStyle = 'rgba(255,255,255,.72)';
+            const oh = pOff(s, 'handle');
+            c.save();
+            c.translate(oh.x, oh.y);
             c.fillText((s.handle || '').trim(), W - M, 58);
+            c.restore();
             ls(c, '0px');
 
             const bs = s.bSize,
@@ -1026,7 +1093,11 @@
             const bodyBottom = H - 74;
             c.textAlign = 'center';
             c.fillStyle = 'rgba(255,255,255,.95)';
+            const ob = pOff(s, 'body');
+            c.save();
+            c.translate(ob.x, ob.y);
             bl.forEach((ln, k) => c.fillText(ln, W / 2, bodyBottom - (bl.length - 1 - k) * blh));
+            c.restore();
 
             const ts = s.tSize,
                 lh = ts * 1.32,
@@ -1036,6 +1107,9 @@
             const tl = wrap(c, s.title, maxW - (centered ? 0 : 32));
             const titleBottom = bl.length ? (bodyBottom - (bl.length - 1) * blh - bs * .8 - 46) : H - 150;
             c.fillStyle = '#fff';
+            const ot = pOff(s, 'title');
+            c.save();
+            c.translate(ot.x, ot.y);
             if (centered) {
                 c.textAlign = 'center';
                 tl.forEach((ln, k) => c.fillText(ln, W / 2, titleBottom - (tl.length - 1 - k) * lh));
@@ -1050,6 +1124,7 @@
                     sh(c, .45);
                 }
             }
+            c.restore();
             ls(c, '0px');
             noSh(c);
         }
@@ -1178,13 +1253,69 @@
             if (!b) return;
             [...el('tabs').children].forEach(x => x.classList.toggle('on', x === b));
             document.querySelectorAll('.panel').forEach(p => p.hidden = p.dataset.p !== b.dataset.t);
+            el('panels').scrollTop = 0;
         };
+
+        /* ---------- position tab ---------- */
+        const POS_UI = [
+            ['all', '문구 전체 이동', '제목·소개·태그·본문을 한꺼번에 옮깁니다. 아래에서 각각 미세 조정하세요.'],
+            ['eyebrow', '윗줄 소개'],
+            ['title', '큰 제목'],
+            ['tags', '태그'],
+            ['body', '본문'],
+            ['handle', '아이디']
+        ];
+        const posPanel = el('posPanel');
+        const fmt = v => (v > 0 ? '+' : '') + v;
+        POS_UI.forEach(([k, nm, hint]) => {
+            const g = document.createElement('div');
+            g.className = 'grp';
+            g.dataset.pos = k;
+            const rng = ax => '<input type="range" data-k="' + k + '" data-ax="' + ax + '" min="' + (ax === 'x' ? -400 : -1000) +
+                '" max="' + (ax === 'x' ? 400 : 1000) + '" step="2" value="0"><span class="val">0</span>';
+            g.innerHTML = '<span class="eyebrow">' + nm + '</span>' +
+                '<div class="row"><span class="name">가로</span>' + rng('x') + '</div>' +
+                '<div class="row"><span class="name">세로</span>' + rng('y') + '</div>' +
+                (hint ? '<div class="hint">' + hint + '</div>' : '');
+            posPanel.appendChild(g);
+        });
+        const posReset = document.createElement('div');
+        posReset.className = 'grp';
+        posReset.innerHTML = '<div class="btns"><button class="btn ghost sm" id="resetPos">위치 초기화</button></div>' +
+            '<div class="hint">1080×1350 기준 픽셀입니다. 세로는 −가 위, +가 아래예요.</div>';
+        posPanel.appendChild(posReset);
+        posPanel.addEventListener('input', e => {
+            const r = e.target;
+            if (!r.dataset.k) return;
+            const p = cur().pos || (cur().pos = newPos());
+            p[r.dataset.k][r.dataset.ax] = +r.value;
+            r.nextElementSibling.textContent = fmt(+r.value);
+            render();
+        });
+        el('resetPos').onclick = () => { cur().pos = newPos();
+            syncForm();
+            render(); };
+
+        /* 슬라이드 종류·내용에 맞는 조절만 보이기 */
+        function syncVis() {
+            const s = cur(),
+                cover = s.type === 'cover',
+                hasTags = cover && !!(s.tags || '').trim(),
+                hasEb = cover && !!(s.eyebrow || '').trim();
+            el('bSizeRow').hidden = cover;
+            el('tagSizeRow').hidden = !hasTags;
+            posPanel.querySelectorAll('.grp[data-pos]').forEach(g => {
+                const k = g.dataset.pos;
+                g.hidden = (k === 'eyebrow' && !hasEb) || (k === 'tags' && !hasTags) || (k === 'body' && cover);
+            });
+        }
 
         /* ---------- inputs ---------- */
         const F = { eyebrowTxt: 'eyebrow', titleTxt: 'title', tagsTxt: 'tags', ctitleTxt: 'title',
             bodyTxt: 'body' };
         Object.keys(F).forEach(id => el(id).addEventListener('input', e => { cur()[F[id]] = e.target
                 .value;
+            syncVis();
             render(); }));
         el('handleTxt').addEventListener('input', e => { S.slides.forEach(s => s.handle = e.target.value);
             render(); });
@@ -1233,6 +1364,10 @@
                 el(k + 'V').textContent = s[k]; });
             el('alignL').classList.toggle('on', s.align !== 'center');
             el('alignC').classList.toggle('on', s.align === 'center');
+            const p = s.pos || (s.pos = newPos());
+            posPanel.querySelectorAll('input[type=range]').forEach(r => { r.value = p[r.dataset.k][r.dataset.ax];
+                r.nextElementSibling.textContent = fmt(+r.value); });
+            syncVis();
             paintStrip();
         }
 
@@ -1322,7 +1457,21 @@
         el('kx').onclick = e => { e.preventDefault();
             e.stopPropagation();
             el('kbar').classList.add('gone');
-            document.body.style.paddingBottom = '24px'; };
+            document.body.classList.add('nokbar'); };
+
+        /* ---------- viewport (고정 레이아웃 · 키보드 대응) ---------- */
+        const vv = window.visualViewport;
+        function fitVH() {
+            if (vv && vv.scale > 1.02) return; // 핀치 줌 중에는 건드리지 않음
+            const h = vv ? vv.height : window.innerHeight;
+            document.documentElement.style.setProperty('--vvh', Math.round(h) + 'px');
+            if (window.scrollY) window.scrollTo(0, 0);
+            const a = document.activeElement;
+            if (a && a.closest && a.closest('.panels')) a.scrollIntoView({ block: 'nearest' });
+        }
+        if (vv) { vv.addEventListener('resize', fitVH); vv.addEventListener('scroll', fitVH); }
+        window.addEventListener('resize', fitVH);
+        fitVH();
 
         /* ---------- go ---------- */
         buildStrip();
@@ -1331,4 +1480,3 @@
     </script>
 </body>
 </html>
-```
