@@ -737,6 +737,7 @@
                 </div>
                 <div class="grp">
                     <span class="eyebrow">글자 크기</span>
+                    <div class="row" id="ebSizeRow"><span class="name">윗줄 소개</span><input type="range" id="ebSize" min="18" max="44" value="26"><span class="val" id="ebSizeV">26</span></div>
                     <div class="row"><span class="name">제목</span><input type="range" id="tSize" min="38" max="96" value="72"><span class="val" id="tSizeV">72</span></div>
                     <div class="row" id="bSizeRow"><span class="name">본문</span><input type="range" id="bSize" min="22" max="46" value="32"><span class="val" id="bSizeV">32</span></div>
                     <div class="row" id="tagSizeRow"><span class="name">태그</span><input type="range" id="tagSize" min="16" max="36" value="23"><span class="val" id="tagSizeV">23</span></div>
@@ -755,10 +756,16 @@
                     <div class="row"><span class="name">그레인</span><input type="range" id="grain" min="0" max="100" value="26"><span class="val" id="grainV">26</span></div>
                     <div class="row"><span class="name">전체 어둡게</span><input type="range" id="dim" min="0" max="70" value="16"><span class="val" id="dimV">16</span></div>
                 </div>
-                <div class="grp">
-                    <span class="eyebrow">제목 정렬</span>
-                    <div class="row"><span class="name">정렬</span>
-                        <div class="seg" style="flex:1"><button id="alignL">왼쪽</button><button id="alignC">가운데</button></div>
+                <div class="grp" id="alignGrp">
+                    <span class="eyebrow">정렬</span>
+                    <div class="row"><span class="name">제목</span>
+                        <div class="seg" style="flex:1" data-al="align"><button data-v="left">왼쪽</button><button data-v="center">가운데</button><button data-v="right">오른쪽</button></div>
+                    </div>
+                    <div class="row" id="ebAlignRow"><span class="name">윗줄 소개</span>
+                        <div class="seg" style="flex:1" data-al="ebAlign"><button data-v="left">왼쪽</button><button data-v="center">가운데</button><button data-v="right">오른쪽</button></div>
+                    </div>
+                    <div class="row" id="bAlignRow"><span class="name">본문</span>
+                        <div class="seg" style="flex:1" data-al="bAlign"><button data-v="left">왼쪽</button><button data-v="center">가운데</button><button data-v="right">오른쪽</button></div>
                     </div>
                 </div>
             </div>
@@ -893,7 +900,10 @@
                 tSize: t.tSize,
                 bSize: t.bSize || 32,
                 tagSize: t.tagSize || 23,
+                ebSize: t.ebSize || 26,
                 align: t.align,
+                ebAlign: t.ebAlign || t.align,
+                bAlign: t.bAlign || 'center',
                 grad: t.grad,
                 gradH: t.gradH,
                 grain: t.grain,
@@ -914,7 +924,10 @@
                 tSize: t.tSize,
                 bSize: t.bSize || 32,
                 tagSize: t.tagSize || 23,
+                ebSize: t.ebSize || 26,
                 align: t.align,
+                ebAlign: t.ebAlign || t.align,
+                bAlign: t.bAlign || 'center',
                 grad: t.grad,
                 gradH: t.gradH,
                 grain: t.grain,
@@ -958,6 +971,13 @@
                 if (ln) out.push(ln);
             }
             return out;
+        }
+
+        /* 정렬값 → canvas textAlign과 x좌표 (m: 좌우 여백) */
+        function alignX(al, m) {
+            if (al === 'center') return { ta: 'center', x: W / 2 };
+            if (al === 'right') return { ta: 'right', x: W - m };
+            return { ta: 'left', x: m };
         }
 
         function sh(c, a) { c.shadowColor = 'rgba(0,0,0,' + a + ')';
@@ -1126,8 +1146,9 @@
             c.font = '800 ' + ts + 'px Pretendard, sans-serif';
             ls(c, '-0.025em');
             const tl = wrap(c, s.title, maxW);
-            c.textAlign = s.align === 'center' ? 'center' : 'left';
-            const tx = s.align === 'center' ? W / 2 : M;
+            const ta = alignX(s.align, M),
+                tx = ta.x;
+            c.textAlign = ta.ta;
             c.fillStyle = '#fff';
             const ot = pOff(s, 'title');
             c.save();
@@ -1138,15 +1159,18 @@
 
             const eb = lines(s.eyebrow);
             if (eb.length) {
-                c.font = '600 26px Pretendard, sans-serif';
+                const es = s.ebSize || 26,
+                    ea = alignX(s.ebAlign || s.align, M);
+                c.font = '600 ' + es + 'px Pretendard, sans-serif';
                 ls(c, '0.01em');
+                c.textAlign = ea.ta;
                 c.fillStyle = 'rgba(255,255,255,.94)';
                 let y = bottom - (tl.length - 1) * lh - ts * .80 - 28;
                 const oe = pOff(s, 'eyebrow');
                 c.save();
                 c.translate(oe.x, oe.y);
-                for (let k = eb.length - 1; k >= 0; k--) { c.fillText(eb[k], tx, y);
-                    y -= 38; }
+                for (let k = eb.length - 1; k >= 0; k--) { c.fillText(eb[k], ea.x, y);
+                    y -= es * 1.46; }
                 c.restore();
                 ls(c, '0px');
             }
@@ -1174,12 +1198,13 @@
             c.font = '500 ' + bs + 'px Pretendard, sans-serif';
             const bl = wrap(c, s.body, W - 190);
             const bodyBottom = H - 74;
-            c.textAlign = 'center';
+            const ba = alignX(s.bAlign || 'center', 95);
+            c.textAlign = ba.ta;
             c.fillStyle = 'rgba(255,255,255,.95)';
             const ob = pOff(s, 'body');
             c.save();
             c.translate(ob.x, ob.y);
-            bl.forEach((ln, k) => c.fillText(ln, W / 2, bodyBottom - (bl.length - 1 - k) * blh));
+            bl.forEach((ln, k) => c.fillText(ln, ba.x, bodyBottom - (bl.length - 1 - k) * blh));
             c.restore();
 
             const ts = s.tSize,
@@ -1197,13 +1222,16 @@
                 c.textAlign = 'center';
                 tl.forEach((ln, k) => c.fillText(ln, W / 2, titleBottom - (tl.length - 1 - k) * lh));
             } else {
-                c.textAlign = 'left';
-                tl.forEach((ln, k) => c.fillText(ln, M + 28, titleBottom - (tl.length - 1 - k) * lh));
+                // 왼쪽/오른쪽: 세로 바가 글자 바깥쪽에 붙음
+                const right = s.align === 'right';
+                c.textAlign = right ? 'right' : 'left';
+                const tx = right ? W - M - 28 : M + 28;
+                tl.forEach((ln, k) => c.fillText(ln, tx, titleBottom - (tl.length - 1 - k) * lh));
                 if (tl.length) {
                     const top = titleBottom - (tl.length - 1) * lh - ts * .86;
                     noSh(c);
                     c.fillStyle = '#fff';
-                    c.fillRect(M, top, 7, (titleBottom + ts * .2) - top);
+                    c.fillRect(right ? W - M - 7 : M, top, 7, (titleBottom + ts * .2) - top);
                     sh(c, .45);
                 }
             }
@@ -1387,6 +1415,9 @@
                 hasEb = cover && !!(s.eyebrow || '').trim();
             el('bSizeRow').hidden = cover;
             el('tagSizeRow').hidden = !hasTags;
+            el('ebSizeRow').hidden = !hasEb;
+            el('ebAlignRow').hidden = !hasEb;
+            el('bAlignRow').hidden = cover;
             posPanel.querySelectorAll('.grp[data-pos]').forEach(g => {
                 const k = g.dataset.pos;
                 g.hidden = (k === 'eyebrow' && !hasEb) || (k === 'tags' && !hasTags) || (k === 'body' && cover);
@@ -1411,7 +1442,8 @@
             dim: ['dim'],
             tSize: ['tSize'],
             bSize: ['bSize'],
-            tagSize: ['tagSize']
+            tagSize: ['tagSize'],
+            ebSize: ['ebSize']
         };
         Object.keys(R).forEach(id => {
             el(id).addEventListener('input', e => {
@@ -1422,12 +1454,13 @@
                 render();
             });
         });
-        el('alignL').onclick = () => { cur().align = 'left';
+        el('alignGrp').addEventListener('click', e => {
+            const b = e.target.closest('button[data-v]');
+            if (!b) return;
+            cur()[b.parentElement.dataset.al] = b.dataset.v;
             syncForm();
-            render(); };
-        el('alignC').onclick = () => { cur().align = 'center';
-            syncForm();
-            render(); };
+            render();
+        });
 
         function syncForm() {
             const s = cur();
@@ -1442,11 +1475,13 @@
             el('handleTxt').value = s.handle;
             el('zoom').value = Math.round(s.zoom * 100);
             el('zoomV').textContent = s.zoom.toFixed(1) + '×';
-            ['grad', 'gradH', 'grain', 'dim', 'tSize', 'bSize', 'tagSize'].forEach(k => { el(k).value = s[
+            ['grad', 'gradH', 'grain', 'dim', 'tSize', 'bSize', 'tagSize', 'ebSize'].forEach(k => { el(k).value = s[
                     k];
                 el(k + 'V').textContent = s[k]; });
-            el('alignL').classList.toggle('on', s.align !== 'center');
-            el('alignC').classList.toggle('on', s.align === 'center');
+            document.querySelectorAll('#alignGrp .seg[data-al]').forEach(seg => {
+                const v = s[seg.dataset.al] || 'left';
+                [...seg.children].forEach(b => b.classList.toggle('on', b.dataset.v === v));
+            });
             const p = s.pos || (s.pos = newPos());
             posPanel.querySelectorAll('input[type=range]').forEach(r => { r.value = p[r.dataset.k][r.dataset.ax];
                 r.nextElementSibling.textContent = fmt(+r.value); });
